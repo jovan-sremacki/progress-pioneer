@@ -1,17 +1,26 @@
-import "reflect-metadata"
-import { DataSource } from "typeorm"
-import { User } from './modules/authentication/domain/entities/User'
+const { DataSource } = require("typeorm");
+const path = require("path");
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
     type: "postgres",
     host: "localhost",
     port: 5432,
     username: "progress_pioneer",
     password: "123",
     database: "progress_pioneer",
-    synchronize: true,
+    synchronize: false,
     logging: false,
-    entities: [User],
-    migrations: [],
-    subscribers: [],
-})
+    entities: [
+        path.join(__dirname, '../dist/modules/**/domain/entities/*.js')
+    ],
+    migrations: [
+        path.join(__dirname, '../dist/migrations/*.js')
+    ],
+    subscribers: [
+        path.join(__dirname, '../dist/modules/**/infrastructure/subscribers/*.js')
+    ],
+});
+
+module.exports = {
+    AppDataSource
+};

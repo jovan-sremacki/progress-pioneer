@@ -1,63 +1,64 @@
-// User.ts
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from "typeorm"
-import { UserRole } from "../enums/userRole.enum"
-import { Status } from "../enums/status.enum"
+const typeorm = require("typeorm");
+const UserRole = require("../enums/userRole.enum").UserRole;
+const Status = require("../enums/status.enum").Status;
 
+const Entity = typeorm.Entity;
+const Column = typeorm.Column;
+const PrimaryGeneratedColumn = typeorm.PrimaryGeneratedColumn;
+const CreateDateColumn = typeorm.CreateDateColumn;
+const UpdateDateColumn = typeorm.UpdateDateColumn;
 
 @Entity('users')
-export class User {
+class User {
 
   @PrimaryGeneratedColumn()
-  id: number
+  id: number;
 
   @Column({ type: 'varchar' })
-  firstName: string
+  firstName: string;
 
   @Column({ type: 'varchar' })
-  lastName: string
+  lastName: string;
 
   @Column('varchar', { nullable: true })
-  username?: string
+  username: string;
 
   @Column({ type: 'varchar' })
-  password: string
+  password: string;
 
   @Column({ type: 'varchar' })
-  email: string
+  email: string;
 
-  // @Column('text', { nullable: true })
   @Column({
     type: 'enum',
     enum: Status,
     default: Status.INACTIVE
   })
-  status: Status // You might use 'enum' here
+  status: typeof Status;
 
   @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.MEMBER
   })
-  role: UserRole
+  role: typeof UserRole
 
   @Column({ type: 'varchar' })
-  verified: boolean
+  verified: string;
 
   @Column({ type: 'varchar', nullable: true })
-  timezone: string
+  timezone: string;
 
   @Column({ type: 'varchar', nullable: true })
-  language_preference: string
+  language_preference: string;
 
   @CreateDateColumn()
-  created_at: Date
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: Date
+  updated_at: Date;
 }
+
+module.exports = {
+  User
+};
