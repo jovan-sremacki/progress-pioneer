@@ -1,64 +1,72 @@
-const typeorm = require("typeorm");
-const UserRole = require("../enums/userRole.enum").UserRole;
-const Status = require("../enums/status.enum").Status;
+import Email from '../value-objects/Email'
+import Password from '../value-objects/Password'
+import { UserRole } from "../enums/userRole.enum"
+import { Status } from "../enums/status.enum"
 
-const Entity = typeorm.Entity;
-const Column = typeorm.Column;
-const PrimaryGeneratedColumn = typeorm.PrimaryGeneratedColumn;
-const CreateDateColumn = typeorm.CreateDateColumn;
-const UpdateDateColumn = typeorm.UpdateDateColumn;
-
-@Entity('users')
 class User {
+  private id: number
+  private firstName: string
+  private lastName: string
+  private username: string
+  private email: Email
+  private password: Password
+  private status: Status
+  private role: UserRole
+  private verified: boolean
+  private timezone: string
+  private languagePreference: string
+  private createdAt: Date
+  private updatedAt: Date
 
-  @PrimaryGeneratedColumn()
-  id: number;
+  constructor(
+    firstName: string,
+    lastName: string,
+    username: string,
+    email: string,
+    password: string,
+    status: Status = Status.INACTIVE,
+    role: UserRole = UserRole.MEMBER,
+    verified: boolean = false,
+    timezone?: string,
+    languagePreference?: string
+  ) {
+    this.firstName = firstName
+    this.lastName = lastName
+    this.username = username
+    this.email = new Email(email)
+    this.password = new Password(password)
+    this.status = status
+    this.role = role
+    this.verified = verified
+    this.timezone = timezone || ''
+    this.languagePreference = languagePreference || ''
+    this.createdAt = new Date()
+    this.updatedAt = new Date()
+  }
 
-  @Column({ type: 'varchar' })
-  firstName: string;
+  public getFullName(): string {
+    return `${this.firstName} ${this.lastName}`
+  }
 
-  @Column({ type: 'varchar' })
-  lastName: string;
+  public getUsername(): string {
+    return this.username
+  }
 
-  @Column('varchar', { nullable: true })
-  username: string;
+  public getEmail(): string {
+    return this.email.getValue()
+  }
 
-  @Column({ type: 'varchar' })
-  password: string;
+  public getPassword(): string {
+    return this.password.getValue()
+  }
 
-  @Column({ type: 'varchar' })
-  email: string;
+  changePassword(newPassword: string) {
+    this.password = new Password(newPassword)
+  }
 
-  @Column({
-    type: 'enum',
-    enum: Status,
-    default: Status.INACTIVE
-  })
-  status: typeof Status;
-
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.MEMBER
-  })
-  role: typeof UserRole
-
-  @Column({ type: 'varchar' })
-  verified: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  timezone: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  language_preference: string;
-
-  @CreateDateColumn()
-  created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date;
+  changeEmail(newEmail: string) {
+    this.email = new Email(newEmail)
+  }
 }
 
-module.exports = {
-  User
-};
+export default User
