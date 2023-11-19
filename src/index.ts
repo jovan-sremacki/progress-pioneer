@@ -4,7 +4,7 @@ const app: Express = express()
 const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3000
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Stefan Kuzman!!!')
+  res.send('Stefan Kuzmanovic!!!')
 })
 
 app.listen(port, () => {
