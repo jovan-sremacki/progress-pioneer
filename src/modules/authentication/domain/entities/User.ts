@@ -12,36 +12,31 @@ class User {
   private password: Password
   private status: Status
   private role: UserRole
-  private verified: boolean
-  private timezone: string
-  private languagePreference: string
   private createdAt: Date
   private updatedAt: Date
 
   constructor(
     firstName: string,
     lastName: string,
-    username: string,
     email: string,
     password: string,
     status: Status = Status.INACTIVE,
     role: UserRole = UserRole.MEMBER,
-    verified: boolean = false,
-    timezone?: string,
-    languagePreference?: string
+    username?: string
   ) {
     this.firstName = firstName
     this.lastName = lastName
-    this.username = username
+    this.username = username || null
     this.email = new Email(email)
     this.password = new Password(password)
     this.status = status
     this.role = role
-    this.verified = verified
-    this.timezone = timezone || ''
-    this.languagePreference = languagePreference || ''
     this.createdAt = new Date()
     this.updatedAt = new Date()
+  }
+
+  public getId(): number {
+    return this.id
   }
 
   public getFullName(): string {
@@ -58,6 +53,22 @@ class User {
 
   public getPassword(): string {
     return this.password.getValue()
+  }
+
+  public getStatus(): string {
+    return this.status
+  }
+
+  public getRole(): UserRole {
+    return this.role
+  }
+
+  public getCreatedAt(): Date {
+    return this.createdAt
+  }
+
+  public getUpdatedAt(): Date {
+    return this.updatedAt
   }
 
   changePassword(newPassword: string) {

@@ -10,16 +10,20 @@ class Password {
     this.value = value;
   }
 
-  private validatePassword(password: string): boolean {
-    return /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password);
-  }
-
   public getValue(): string {
     return this.value;
   }
 
   public equals(other: Password): boolean {
     return this.value === other.getValue();
+  }
+
+  public toString(): string {
+    return this.getValue();
+  }
+
+  private validatePassword(password: string): boolean {
+    return /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password);
   }
 }
 
