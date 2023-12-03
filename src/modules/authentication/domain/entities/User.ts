@@ -63,12 +63,12 @@ class User {
     return this.role
   }
 
-  public getCreatedAt(): Date {
-    return this.createdAt
+  public getCreatedAt(): string {
+    return this.createdAt.toLocaleDateString()
   }
 
-  public getUpdatedAt(): Date {
-    return this.updatedAt
+  public getUpdatedAt(): string {
+    return this.updatedAt.toLocaleDateString()
   }
 
   changePassword(newPassword: string) {

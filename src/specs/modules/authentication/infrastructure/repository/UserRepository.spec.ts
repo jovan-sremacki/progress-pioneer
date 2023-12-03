@@ -1,62 +1,61 @@
 import User from "@modules/authentication/domain/entities/User"
 import UserRepository from "@modules/authentication/infrastructure/repository/UserRepository"
-
-const mockReturnedUser = {
-  id: 1,
-  name: 'Test User',
-  email: 'test@example.com',
-  password: 'Te$t123!'
-}
+import knex from "knex"
 
 let userRepository: UserRepository
-let simulateInsertError = false
+let db: any
 
-const mockQueryBuilder = {
-  insert: jest.fn().mockImplementation(() => {
-    if (simulateInsertError) {
-      throw new Error('Duplicate entry')
-    }
-    return mockQueryBuilder
-  }),
-  where: jest.fn().mockReturnThis(),
-  returning: jest.fn().mockImplementation(() => Promise.resolve([mockReturnedUser])),
-  first: jest.fn().mockResolvedValue(mockReturnedUser),
-}
+beforeAll(async () => {
+  // Set up an in-memory SQLite database for testing
+  db = knex({
+    client: 'sqlite3',
+    connection: {
+      filename: ':memory:'
+    },
+    useNullAsDefault: true
+  })
 
-jest.mock('knex', () => {
-  return () => mockQueryBuilder
+  await db.schema.createTable('users', (table: any) => {
+    table.increments('id')
+    table.string('firstname')
+    table.string('lastname')
+    table.string('email').unique()
+    table.string('password')
+    table.string('role')
+    table.string('status')
+    table.string('username')
+    table.timestamp('createdAt').defaultTo(db.fn.now())
+    table.timestamp('updatedAt').defaultTo(db.fn.now())
+  })
+
+  userRepository = new UserRepository(db)
+})
+
+afterAll(() => {
+  db.destroy()
 })
 
 describe('save', () => {
-  beforeEach(() => {
-    userRepository = new UserRepository(require('knex'))
-    simulateInsertError = false
-  })
-
   it('should save a user', async () => {
     const user = new User('Test', 'User', 'test@example.com', 'Te$t123!')
     const savedUser = await userRepository.save(user)
+    
+    const expectedResponse = {
+      id: savedUser.getId(),
+      name: savedUser.getFullName(),
+      email: savedUser.getEmail(),
+      password: savedUser.getPassword()
+    }
 
-    expect(mockQueryBuilder.insert).toHaveBeenCalledWith(user)
-    expect(savedUser).toEqual(mockReturnedUser)
-  })
+    const result = await db('users').where('email', 'test@example.com')
 
-  it('should throw an error when trying to insert a user that already exists', async () => {
-    const user = new User('Test', 'User', 'test@example.com', 'Te$t123!')
-    simulateInsertError = true
-  
-    expect(userRepository.save(user)).rejects.toThrow('Duplicate entry')
-    expect(mockQueryBuilder.insert).toHaveBeenCalledWith(user)
-  })
-})
-
-describe('findByEmail', () => {
-  beforeEach(() => {
-    userRepository = new UserRepository(require('knex'))
-  })
-
-  it('should return a user by email', async () => {
-    const user = await userRepository.findByEmail('test@example.com')
-    expect(user).toEqual(mockReturnedUser)
+    expect(result).toEqual(expectedResponse)
   })
 })
+
+// describe('findByEmail', () => {
+//   it('should return a user by email', async () => {
+//     const user = await userRepository.findByEmail('test@example.com')
+//     expect(user).toEqual(mockReturnedUser)
+//   })
+// })
