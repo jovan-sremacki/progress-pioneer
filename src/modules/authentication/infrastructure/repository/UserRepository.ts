@@ -1,21 +1,23 @@
 import { Knex } from "knex"
-import { IUserRepository } from "./IUserRepository"
 import User from "@modules/authentication/domain/entities/User"
+import EmailAlreadyExistsException from "@modules/authentication/domain/exceptions/EmailAlreadyExistsException"
 
-class UserRepository implements IUserRepository {
-  constructor(private knex: Knex) {}
+class UserRepository {
+  constructor(private knex: Knex) { }
 
-  async save(user: User): Promise<User> {
-    const [savedUser] = await this.knex<User>('users').insert(user).returning('*')
-    return savedUser
+  async save(user: object): Promise<User | null> {
+    const [savedUser] = await this.knex('users').insert(user).returning('*')
+    return User.create(savedUser)
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.knex<User>('users').where('email', email).first()
+    const user = await this.knex<User>('users').where('email', email).first()
+    return User.create(user)
   }
 
   async findById(id: number): Promise<User | null> {
-    return this.knex<User>('users').where('id', id).first()
+    const user = this.knex<User>('users').where('id', id).first()
+    return User.create(user)
   }
 }
 

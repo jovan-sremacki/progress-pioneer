@@ -1,61 +1,51 @@
-import User from "@modules/authentication/domain/entities/User"
-import UserRepository from "@modules/authentication/infrastructure/repository/UserRepository"
 import knex from "knex"
+import knexfile from "../../../../../knexfile"
+import UserRepository from "@modules/authentication/infrastructure/repository/UserRepository"
+import { Status } from "@modules/authentication/domain/enums/status.enum"
+import { UserRole } from "@modules/authentication/domain/enums/userRole.enum"
 
 let userRepository: UserRepository
-let db: any
+let db;
 
 beforeAll(async () => {
-  // Set up an in-memory SQLite database for testing
-  db = knex({
-    client: 'sqlite3',
-    connection: {
-      filename: ':memory:'
-    },
-    useNullAsDefault: true
-  })
-
-  await db.schema.createTable('users', (table: any) => {
-    table.increments('id')
-    table.string('firstname')
-    table.string('lastname')
-    table.string('email').unique()
-    table.string('password')
-    table.string('role')
-    table.string('status')
-    table.string('username')
-    table.timestamp('createdAt').defaultTo(db.fn.now())
-    table.timestamp('updatedAt').defaultTo(db.fn.now())
-  })
-
+  db = knex(knexfile.test)
   userRepository = new UserRepository(db)
 })
 
-afterAll(() => {
-  db.destroy()
+afterAll(async () => {
+  await db('users').del()
 })
 
 describe('save', () => {
-  it('should save a user', async () => {
-    const user = new User('Test', 'User', 'test@example.com', 'Te$t123!')
-    const savedUser = await userRepository.save(user)
-    
-    const expectedResponse = {
-      id: savedUser.getId(),
-      name: savedUser.getFullName(),
-      email: savedUser.getEmail(),
-      password: savedUser.getPassword()
+  const userObject = {
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test@example.com',
+    password: 'Te$t123!',
+    verified: false,
+    status: Status.INACTIVE,
+    role: UserRole.MEMBER,
+  }
+
+  it('should save a user', async () => {        
+    const savedUser = await userRepository.save(userObject)
+
+    const result = await userRepository.findByEmail('test@example.com')
+    expect(result).toEqual(savedUser)
+  })
+
+  it('should raise an error when trying to use existing email', async () => {
+    try {
+      await userRepository.save(userObject)
+    } catch (error) {
+      expect(error).toBeDefined()
     }
-
-    const result = await db('users').where('email', 'test@example.com')
-
-    expect(result).toEqual(expectedResponse)
   })
 })
 
-// describe('findByEmail', () => {
-//   it('should return a user by email', async () => {
-//     const user = await userRepository.findByEmail('test@example.com')
-//     expect(user).toEqual(mockReturnedUser)
-//   })
-// })
+describe('findByEmail', () => {
+  it('should return a user by email', async () => {
+    const user = await userRepository.findByEmail('test@example.com')
+    expect(user.getFullName()).toEqual('Test User')
+  })
+})

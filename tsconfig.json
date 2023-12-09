@@ -6,7 +6,9 @@
     "rootDir": "./src",
     "baseUrl": "./",
     "paths": {
-      "@modules/*": ["src/modules/*"]
+      "@modules/*": [
+        "src/modules/*"
+      ]
     },
     "esModuleInterop": true,
     "experimentalDecorators": true,

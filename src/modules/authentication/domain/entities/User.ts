@@ -1,5 +1,3 @@
-import Email from '../value-objects/Email'
-import Password from '../value-objects/Password'
 import { UserRole } from "../enums/userRole.enum"
 import { Status } from "../enums/status.enum"
 
@@ -8,31 +6,36 @@ class User {
   private firstName: string
   private lastName: string
   private username: string
-  private email: Email
-  private password: Password
+  private email: string
+  private password: string
+  private verified: boolean
   private status: Status
   private role: UserRole
-  private createdAt: Date
-  private updatedAt: Date
+  private created_at: string
+  private updated_at: string
 
   constructor(
+    id: number,
     firstName: string,
     lastName: string,
     email: string,
     password: string,
+    verified: boolean = false,
     status: Status = Status.INACTIVE,
     role: UserRole = UserRole.MEMBER,
     username?: string
   ) {
+    this.id = id
     this.firstName = firstName
     this.lastName = lastName
     this.username = username || null
-    this.email = new Email(email)
-    this.password = new Password(password)
+    this.email = email
+    this.password = password
+    this.verified = verified
     this.status = status
     this.role = role
-    this.createdAt = new Date()
-    this.updatedAt = new Date()
+    this.created_at = new Date().toISOString().split('T')[0]
+    this.updated_at = new Date().toISOString().split('T')[0]
   }
 
   public getId(): number {
@@ -48,15 +51,19 @@ class User {
   }
 
   public getEmail(): string {
-    return this.email.getValue()
+    return this.email
   }
 
   public getPassword(): string {
-    return this.password.getValue()
+    return this.password
   }
 
   public getStatus(): string {
     return this.status
+  }
+
+  public getVerified(): boolean {
+    return this.verified
   }
 
   public getRole(): UserRole {
@@ -64,19 +71,25 @@ class User {
   }
 
   public getCreatedAt(): string {
-    return this.createdAt.toLocaleDateString()
+    return this.created_at
   }
 
   public getUpdatedAt(): string {
-    return this.updatedAt.toLocaleDateString()
+    return this.updated_at
   }
 
-  changePassword(newPassword: string) {
-    this.password = new Password(newPassword)
-  }
-
-  changeEmail(newEmail: string) {
-    this.email = new Email(newEmail)
+  static create(object: any): User {    
+    return new User(
+      object.id,
+      object.firstName,
+      object.lastName,
+      object.email,
+      object.password,
+      object.verified,
+      object.status,
+      object.role,
+      object.username,
+    )
   }
 }
 
