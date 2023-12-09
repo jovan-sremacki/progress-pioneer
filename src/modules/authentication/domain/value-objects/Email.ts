@@ -22,6 +22,10 @@ class Email {
   public equals(other: Email): boolean {
     return this.value === other.getValue()
   }
+
+  public toString(): string {
+    return this.getValue();
+  }
 }
 
 export default Email
