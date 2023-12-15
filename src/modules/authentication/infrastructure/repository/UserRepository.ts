@@ -5,19 +5,25 @@ import EmailAlreadyExistsException from "@modules/authentication/domain/exceptio
 class UserRepository {
   constructor(private knex: Knex) { }
 
-  async save(user: object): Promise<User | null> {
-    const [savedUser] = await this.knex('users').insert(user).returning('*')
-    return User.create(savedUser)
+  async save(user: any): Promise<User | null> {
+    try {
+      const [savedUser] = await this.knex('users').insert(user).returning('*')
+      return User.create(savedUser)
+    } catch (error) {
+      if (error.constraint == 'users_email_unique') {        
+        throw new EmailAlreadyExistsException(user.email)
+      }
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.knex<User>('users').where('email', email).first()
-    return User.create(user)
+    return user ? User.create(user) : null
   }
 
   async findById(id: number): Promise<User | null> {
-    const user = this.knex<User>('users').where('id', id).first()
-    return User.create(user)
+    const user = await this.knex<User>('users').where('id', id).first()
+    return user ? User.create(user) : null
   }
 }
 
