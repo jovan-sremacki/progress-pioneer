@@ -1,19 +1,18 @@
-import knex from "knex"
-import knexfile from "../../../../../knexfile"
+import { setupTestDB, teardownTestDB } from "../../../../../support/testDatabaseSetup"
 import UserRepository from "@modules/authentication/infrastructure/repository/UserRepository"
 import { Status } from "@modules/authentication/domain/enums/status.enum"
 import { UserRole } from "@modules/authentication/domain/enums/userRole.enum"
 
 let userRepository: UserRepository
-let db;
+let db
 
 beforeAll(async () => {
-  db = knex(knexfile.test)
+  db = setupTestDB()
   userRepository = new UserRepository(db)
 })
 
 afterAll(async () => {
-  await db('users').del()
+  teardownTestDB('users')
 })
 
 describe('save', () => {
@@ -27,7 +26,7 @@ describe('save', () => {
     role: UserRole.MEMBER,
   }
 
-  it('should save a user', async () => {        
+  it('should save a user', async () => {
     const savedUser = await userRepository.save(userObject)
 
     const result = await userRepository.findByEmail('test@example.com')
@@ -48,4 +47,36 @@ describe('findByEmail', () => {
     const user = await userRepository.findByEmail('test@example.com')
     expect(user.getFullName()).toEqual('Test User')
   })
+
+  it('should return null when no matching email is found', async () => {
+    const email = 'nonexistent@example.com'
+    const foundUser = await userRepository.findByEmail(email)
+    expect(foundUser).toBeNull()
+  })
 })
+
+describe('findById', () => {
+  it('should return a user when a matching ID is found', async () => {
+    const userObject = {
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test2@example.com',
+      password: 'Te$t123!',
+      verified: false,
+      status: Status.INACTIVE,
+      role: UserRole.MEMBER,
+    }
+    const savedUser = await userRepository.save(userObject);
+
+    const foundUser = await userRepository.findById(savedUser.getId());
+    expect(foundUser).toBeDefined();
+    expect(foundUser.getId()).toBe(savedUser.getId());
+  });
+
+  it('should return null when no matching ID is found', async () => {
+    const id = 99999; // an ID unlikely to exist
+    const foundUser = await userRepository.findById(id);
+    expect(foundUser).toBeNull();
+  });
+});
+
